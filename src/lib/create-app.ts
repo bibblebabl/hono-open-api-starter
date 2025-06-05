@@ -1,4 +1,7 @@
+import type { Schema } from "hono";
+
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { requestId } from "hono/request-id";
 import { notFound, onError, serveEmojiFavicon } from "stoker/middlewares";
 import { defaultHook } from "stoker/openapi";
 
@@ -15,14 +18,15 @@ export function createRouter() {
 
 export default function createApp() {
   const app = createRouter();
-  app.use(serveEmojiFavicon("📝"));
-  app.use(pinoLogger());
+  app.use(requestId())
+    .use(serveEmojiFavicon("📝"))
+    .use(pinoLogger());
 
   app.notFound(notFound);
   app.onError(onError);
   return app;
 }
 
-export function createTestApp<R extends AppOpenAPI>(router: R) {
+export function createTestApp<S extends Schema>(router: AppOpenAPI<S>) {
   return createApp().route("/", router);
 }
